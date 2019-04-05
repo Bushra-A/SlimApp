@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Mobile Templates</title>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <meta content="" name="keywords">
+  <meta content="" name="description">
+
+  <!-- Favicons -->
+  <link href="img/favicon.png" rel="icon">
+  <link href="img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i|Montserrat:300,400,500,700"
+    rel="stylesheet">
+
+  <!-- Bootstrap CSS File -->
+
+
+  <link rel="stylesheet" href="style/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="style/custome2.css?v=version2">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+   <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.js"></script>
+    
+   <!--jQuery Validation Plugin -->
+   <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.0/dist/jquery.validate.min.js"></script> 
+
+   <script src="js/bootstrap.min.js"></script> 
+
+   <script type="text/javascript">
+    /*
+    all this code in validateform() should not be like this
+    */
+     function validateform() {
+       var number = document.myform.number.value;
+       var year = document.myform.year.value;
+      var month = document.myform.month.value;
+       var csv = document.myform.csv.value;
+       var userid = document.myform.userid.value;
+
+       if (number == null || number == "") {
+         alert("Name can't be blank");
+         return false;
+       } else if (year == null || year == "") {
+         alert("year can't be blank");
+         return false;
+       } else if (month == null || month == "") {
+        alert("month can't be blank");
+        return false;
+       } else if (csv == null || csv == "") {
+         alert("csv can't be blank");
+         return false;
+       } else if (userid == null || userid == "") {
+        alert("userid can't be blank");
+        return false;
+    }
+    }
+   </script> 
+</head>
+<body>
+
+
+  <div class="section">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-3">
+
+        </div>
+        <div class="col-sm-6 main-body">
+          <img src="" alt="">
+          <h2 class="heading">Attach Card</h2>
+          <p class="description">plese enter the details for the card that will <br> pay out the monthely donations</p>
+
+          <form name="myform" class="form-signin" role="form" action="index.php" method="post">
+              <input type="text" class="form-custome" name="id" id="editid" value="2424"
+              placeholder="id">
+            <input type="text" class="form-custome" name="ccnumber" id="loginnumber" value="24242424242424242424"
+              placeholder="CARD NUMBER">
+            <input type="text" class="form-custome" name="ccexpyear" id="loginyear" value="12/21" placeholder=" YEAR/MONTH">
+            <input type="text" class="form-custome" name="cccvs" id="logincsv" value="123" placeholder=" CVS">
+            <input type="text" class="form-custome" name="user_id" id="loginuserid" value="123" placeholder=" Userid">
+            <button id="submit" class="btn btn-lg btn-primary btn-block" type="submit"><b>ATTACH CARD</b></button>
+          </form>
+          <p class="description-end">we employ multilevel safegurads including TLS<br> encryption to protect your data
+          </p>
+          <button class="btn-end " type="submit" name="postbtn">powereb by<b> STRIPE</b></button>
+        </div>
+        <div class="col-sm-3">
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+//base url of the api
+    // var API_URL = "http://localhost/addcard/api/index.php";
+
+    // $(document).ready(function () {
+
+    //   // form submit posting event handler in jQuery will fire when form will be posted in html
+    //   $(".form-signin").submit(function (e) {
+    //     e.preventDefault();
+    //     // post API URL by concatenating base api and post end point url
+        
+    //     // http://localhost/addcard/api/index.php/card
+        
+    //     // get all form fields data 
+    //     var postData = $(".form-signin").serialize();
+
+    //     // ready to make ajax call
+    //     $.ajax({
+        
+    //       url:apiUrl+ "/card",
+    //       type: "POST",
+    //       data: postData,
+    //       dataType: "json",
+    //       success: function (response) {
+    //         response= $.parsejson(response);
+          
+    //         if(response.status=='success'){
+    //           $(".form-signin").html(response.html);
+    //         }
+          
+          
+    //         // server response from .php page will be received inside this 
+    //         // call back section of the success function
+    //         console.log(response);
+    //         //alert(response);
+    //       },
+        
+    //       error: function (err) {
+    //         // if server side code has error response, then this call back 
+    //         // function will be called.
+    //         alert("Whoops! Something went wrong. Please check logs");
+    //       }
+    //     });
+    //   });
+    // })
+    
+   
+// 2nd method 
+
+       var apiUrl = "http://localhost/addcard/api/index.php";
+       $(document).ready(function () {
+           // masking
+           $("#loginyear").mask("9999/99", { placeholder: "YYYY/MM" });
+           $("#loginnumber").mask("9999 9999 9999 9999", { placeholder: "0000 0000 0000 0000" });
+           $("#logincsv").mask("9999", { placeholder: "0000" });
+           $("#loginuserid").mask("9999", { placeholder: "0000" });
+
+
+
+           // api interaction
+           $(".form-signin").submit(function (e) {
+               e.preventDefault();
+               // this will give you complete form fields
+               // do read later what is .serialize() does
+               var postData = $(".form-signin").serialize();
+               // ready to make ajax call
+               $.ajax({
+                   url: apiUrl + "/put",
+                   type: "put",
+                   data: postData, /// this postData will be fetched in API
+                   //dataType: "json",
+                   success: function (response) {
+                       console.log(response);
+                       alert(response);
+                   },
+                   error: function (err) {
+                       alert("Whoops! Something went wrong. Please check logs");
+                   }
+               });
+           });
+          })
+</script>
+
+
+  
+</body>   
+</html>
