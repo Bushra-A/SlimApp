@@ -21,37 +21,54 @@ error_reporting(E_ALL & ~E_NOTICE);
 
 \Slim\Slim::registerAutoloader();
 $app = new \Slim\Slim();
-$std = new \slim\slim();
 
+
+function getCardList(){
+
+    $searchQquery = (int)$_GET["query"];
+    $page=(isset($_GET['page']) && $_GET['page']>0) ? (int)$_GET['page'] : 1 ;
+    $limit = 8;
+    $offset = ($page * $limit) - $limit;
     
-// / GET route is used to get the data in table
+    # get list and search query
+    $sqlList = "CALL getcard($searchQquery, $offset, $limit)";
+    $response['data'] = DB::query($sqlList);
+    //print_r($response['data']); exit;
+    // count card by procedure
+    $totalCardsResult = DB::query("CALL countcard($searchQquery)");
+    $totalCards = intval( $totalCardsResult[0]['total_cards']);
+   // print_r($totalCardsResult); exit;
+    $pages = ceil($totalCards/$limit);
+
+    $response['pagination'] = [
+        'total' => $totalCards,
+        'pages' => $pages,
+        'limit' => $limit,
+        'offset' => $offset,
+        'current' => $page,
+        'next' => ($pages <= $page)?0:$page+1,
+        'prev' => ($pages >= $page )?$page-1:0
+    ];
+
+   return $response;
+}
+
+
+
+// get card list
 $app->get('/getcard', function () use ($app) {
 
-   // $sqlList = "SELECT * FROM card";
- 
-    // data get using procedure
-  $sqlList = 'CALL getcard(@id,@ccnumber,@cccvs,@ccexpyear,@user_id)';
- 
- 
+   $response = getCardList();
 
-   // created php associative array to store results and message
-
-   $response = array("msg" => null, "data" => null);
-
-   // this will return array of rows from table agains the query
-   $response["data"] = DB::query($sqlList);
-
-   // checking data is loading then adding message text
    if ($response["data"]) {
        $response["msg"] = "Data loaded";
    } else {
        $response["msg"] = "Data not loaded";
    }
 
-   // we will send JSON response to HTTP
-   $app->response()->status(200); // HTTP Status Code Set to 200
-   $app->response()->header('Content-Type', 'application/json'); // Response Content Type Set to JSON
-   $app->response()->write(json_encode($response)); // Response is encoded in json. The array is converted into JSON and sent out in HTTP response stream
+   $app->response()->status(200); 
+   $app->response()->header('Content-Type', 'application/json'); 
+   echo json_encode($response); 
 });
 
 // // GET route
@@ -124,12 +141,12 @@ $app->get('/getcard', function () use ($app) {
         "user_id" => $userid
         
     );
-
+   var_dump($saveToDb);
     // simple insert of form data using meekrodb
     Db :: debugMode();
     
     $sql = "call insertcard('@id','@ccnumber','@cccvs','@ccexpmonth','@ccexpyear','@user_id')";
-    DB::insert('card',$sql);
+    DB::insert('card',$saveToDb,$sql);  // this used without $sql used for without procedure 
        // $saveToDb
     
     // get new inserted id
@@ -164,7 +181,7 @@ $app->put('/put', function () use($app) {
     Db :: debugMode();
     try{
         $sql = "CALL updatecard($id)";
-    DB::update('card', $putData, "id=%i", $id,$sql);
+    DB::update('card', $putData, "id=%i", $id,$sql);           
     }catch(MeekroDBException $e){
         die('Error'.$e->getMessage());  
     }
@@ -197,6 +214,46 @@ $app->post('/delete', function () use ($app) {
 }
 );
 
+// searchcard
+$app->post('/search', function () use($app) {
+
+    //var_dump($_REQUEST);
+    $query = $_POST["query"];
+
+    //$sql = "SELECT * FROM card WHERE ccnumber like '%".$query."%' and ccexpyear like '%".$query."%' and ccexpmonth like '%".$query."%' and cccvs like '%".$query."%'";
+    $sql = "SELECT * FROM card WHERE ccnumber = '$query' OR ccexpyear = '$query'";
+    //echo $sql;
+    $rs = DB::query($sql);
+
+    //var_dump($rs);
+
+    echo json_encode($rs);
+
+    exit;
+});
+//    try{
+    
+//         Db :: debugMode();
+//         $cardList = DB::queryFullColumns("SELECT * FROM `card` WHERE ccnumber LIKE '61%' ");
+//         $response = [];
+//         foreach($cardList as $card){
+//             $response[] = [
+//                 'id' => $card['card.id'],
+//                 'ccnumber' => $card['card.ccnumber'],
+//                 'ccexpmonth' => $card['card.ccexpmonth'],
+//                 'ccexpyear' => $card['card.ccexpyear'],
+//                 'user_id' => $card['card.user_id']
+//             ];
+           
+//         }
+    
+//     }catch(MeekroDBException $e){
+//         die('Error'.$e->getMessage());  
+//     }
+//     die(json_encode($response));
+// });
+
+
 /**
  * Step 4: Run the Slim application
  *
@@ -204,3 +261,22 @@ $app->post('/delete', function () use ($app) {
  * and returns the HTTP response to the HTTP client.
  */
 $app->run();
+
+
+
+
+    /*
+    //$records = ($query);
+    //echo '<pre>',print_r($records),'</pre>';
+    $result = DB::query ("SELECT FOUND_ROWS() as total limit $offset, $limit");
+
+    DB::query ("SELECT FOUND_ROWS() as total limit $offset, $limit");
+    $total = ($total)['total'];
+    $pages = ceil($total/$limit);
+    //echo $pages;
+    */    
+
+    /*
+    $query = "SELECT * FROM card LIMIT  {$offset} , {$limit}";
+    $records = DB::query ($query);
+    */
